@@ -19,21 +19,24 @@ const statusStyles: Record<BadgeStatus, StatusStyle> = {
   },
   'in-progress': {
     bg: colors.status.inProgressBg,
-    text: colors.status.inProgress,
+    // Was colors.status.inProgress (1.93:1 on the tinted bg) — swapped to a
+    // darker accessible token. `progress`/`border` stay vivid since those are
+    // decorative (progress fill, border), not text.
+    text: colors.status.inProgressText,
     border: colors.status.inProgress,
     progress: colors.status.inProgress,
     label: 'In Progress',
   },
   completed: {
     bg: colors.status.completedBg,
-    text: colors.status.completed,
+    text: colors.status.completedText,
     border: colors.status.completed,
     progress: colors.status.completed,
     label: 'Completed',
   },
   disabled: {
     bg: colors.status.disabledBg,
-    text: colors.text.disabled,
+    text: colors.status.disabledText,
     border: colors.status.disabled,
     progress: colors.status.disabled,
     label: 'Locked',
@@ -54,6 +57,7 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
       className={`
         flex items-center gap-3 p-4 border-2
         transition-all duration-300
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600
         ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg hover:scale-[1.02] cursor-pointer'}
         w-full max-w-md
       `}
@@ -64,21 +68,25 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
       }}
       onClick={isDisabled ? undefined : onClick}
       role="button"
+      aria-disabled={isDisabled}
+      aria-label={`${title}, ${style.label}, ${Math.round(progress)}% complete`}
       tabIndex={isDisabled ? -1 : 0}
       onKeyDown={(e) => {
-        if (!isDisabled && (e.key === 'Enter' || e.key === ' ') && onClick) {
-          onClick();
+        if (!isDisabled && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick?.();
         }
       }}
     >
-      {/* Status Indicator */}
+      {/* Status Indicator (decorative — status is already conveyed via the tag text and aria-label) */}
       <div
+        aria-hidden="true"
         className="w-3 h-3 rounded-full flex-shrink-0"
         style={{ backgroundColor: style.text }}
       />
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0" aria-hidden="true">
         <div
           className="font-semibold truncate"
           style={{
@@ -92,7 +100,13 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
         </div>
 
         {/* Progress Bar */}
-        <div className="mt-2 flex items-center gap-2">
+        <div
+          className="mt-2 flex items-center gap-2"
+          role="progressbar"
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
           <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-700"
@@ -111,8 +125,9 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
         </div>
       </div>
 
-      {/* Status Tag */}
+      {/* Status Tag (visual only — name already exposed via aria-label above) */}
       <div
+        aria-hidden="true"
         className="text-xs font-medium px-3 py-1 rounded-full flex-shrink-0"
         style={{
           backgroundColor: style.text + '20',

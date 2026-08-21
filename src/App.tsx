@@ -1,11 +1,29 @@
-import { LearnerProgressBadge, Quiz } from './components';
+import { useCallback } from 'react';
+import { LearnerProgressBadge, Quiz, QuizSkeleton, QuizLoadError } from './components';
 import { quizQuestions } from './data/quizData';
-import type { QuizResult } from './types';
+import { useQuizQuestions } from './hooks/useQuizQuestions';
+import type { QuizQuestion, QuizResult } from './types';
+
+// Stand-in for a real API call. Resolves the statically-bundled question set
+// after a short simulated delay so the loading skeleton has something to do.
+// Swap this for a real `fetch(...)` when a questions endpoint exists.
+function fetchQuizQuestions(): Promise<QuizQuestion[]> {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(quizQuestions), 400);
+  });
+}
 
 function App() {
-  const handleQuizComplete = (results: QuizResult) => {
-    console.log('Quiz Results:', results);
-  };
+  const { status, data, retry } = useQuizQuestions(fetchQuizQuestions);
+
+  const handleQuizComplete = useCallback((results: QuizResult) => {
+    // Only aggregate counts are logged, and only in dev builds — no learner
+    // identifiers, answer content, or telemetry payloads reach the console
+    // in production.
+    if (import.meta.env.DEV) {
+      console.log('Quiz Results:', results);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 md:p-8">
@@ -59,10 +77,11 @@ function App() {
             <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">
               Quick Quiz
             </h2>
-            <Quiz
-              questions={quizQuestions}
-              onComplete={handleQuizComplete}
-            />
+            {status === 'loading' && <QuizSkeleton />}
+            {status === 'error' && <QuizLoadError onRetry={retry} />}
+            {status === 'success' && data && (
+              <Quiz questions={data} onComplete={handleQuizComplete} />
+            )}
           </section>
         </div>
 

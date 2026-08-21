@@ -18,10 +18,17 @@ export const colors = {
   status: {
     inProgress: '#F59E0B',
     inProgressBg: '#FEF3C7',
+    // Accessible text color for the in-progress badge. #F59E0B on #FEF3C7 is
+    // only 1.93:1 — fails WCAG AA (4.5:1). #92400E (amber-800) hits 6.37:1.
+    inProgressText: '#92400E',
     completed: '#3B82F6',
     completedBg: '#DBEAFE',
+    // #3B82F6 on #DBEAFE is 3.01:1 — fails AA. #1E40AF (blue-800) hits 7.15:1.
+    completedText: '#1E40AF',
     disabled: '#9CA3AF',
     disabledBg: '#F3F4F6',
+    // #9CA3AF on #F3F4F6 is 2.31:1 — fails AA. #4B5563 (gray-600) hits 6.87:1.
+    disabledText: '#4B5563',
     defaultBg: '#F9FAFB',
   },
   text: {
