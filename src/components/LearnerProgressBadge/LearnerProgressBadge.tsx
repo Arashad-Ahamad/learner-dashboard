@@ -1,5 +1,5 @@
-import { colors, typography, borderRadius } from '../../tokens/designTokens';
-import type { LearnerProgressBadgeProps, BadgeStatus } from '../../types';
+import { colors, typography, borderRadius } from "../../tokens/designTokens";
+import type { LearnerProgressBadgeProps, BadgeStatus } from "../../types";
 
 interface StatusStyle {
   bg: string;
@@ -15,9 +15,9 @@ const statusStyles: Record<BadgeStatus, StatusStyle> = {
     text: colors.text.primary,
     border: colors.surface.border,
     progress: colors.brand.primary,
-    label: 'Not Started',
+    label: "Not Started",
   },
-  'in-progress': {
+  "in-progress": {
     bg: colors.status.inProgressBg,
     // Was colors.status.inProgress (1.93:1 on the tinted bg) — swapped to a
     // darker accessible token. `progress`/`border` stay vivid since those are
@@ -25,32 +25,32 @@ const statusStyles: Record<BadgeStatus, StatusStyle> = {
     text: colors.status.inProgressText,
     border: colors.status.inProgress,
     progress: colors.status.inProgress,
-    label: 'In Progress',
+    label: "In Progress",
   },
   completed: {
     bg: colors.status.completedBg,
     text: colors.status.completedText,
     border: colors.status.completed,
     progress: colors.status.completed,
-    label: 'Completed',
+    label: "Completed",
   },
   disabled: {
     bg: colors.status.disabledBg,
     text: colors.status.disabledText,
     border: colors.status.disabled,
     progress: colors.status.disabled,
-    label: 'Locked',
-  }
+    label: "Locked",
+  },
 };
 
 const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
-  status = 'default',
-  title = 'Course',
+  status = "default",
+  title = "Course",
   progress = 0,
-  onClick
+  onClick,
 }) => {
   const style = statusStyles[status];
-  const isDisabled = status === 'disabled';
+  const isDisabled = status === "disabled";
 
   return (
     <div
@@ -58,7 +58,7 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
         flex items-center gap-3 p-4 border-2
         transition-all duration-300
         focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600
-        ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg hover:scale-[1.02] cursor-pointer'}
+        ${isDisabled ? "opacity-60 cursor-not-allowed" : "hover:shadow-lg hover:scale-[1.02] cursor-pointer"}
         w-full max-w-md
       `}
       style={{
@@ -72,7 +72,7 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
       aria-label={`${title}, ${style.label}, ${Math.round(progress)}% complete`}
       tabIndex={isDisabled ? -1 : 0}
       onKeyDown={(e) => {
-        if (!isDisabled && (e.key === 'Enter' || e.key === ' ')) {
+        if (!isDisabled && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
           onClick?.();
         }
@@ -112,14 +112,11 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
               className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${Math.min(100, Math.max(0, progress))}%`,
-                backgroundColor: style.progress
+                backgroundColor: style.progress,
               }}
             />
           </div>
-          <span
-            className="text-xs font-medium"
-            style={{ color: style.text }}
-          >
+          <span className="text-xs font-medium" style={{ color: style.text }}>
             {Math.round(progress)}%
           </span>
         </div>
@@ -130,7 +127,7 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
         aria-hidden="true"
         className="text-xs font-medium px-3 py-1 rounded-full flex-shrink-0"
         style={{
-          backgroundColor: style.text + '20',
+          backgroundColor: style.text + "20",
           color: style.text,
           borderRadius: borderRadius.full,
         }}

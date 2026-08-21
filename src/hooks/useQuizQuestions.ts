@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { QuizQuestion } from '../types';
+import { useCallback, useEffect, useState } from "react";
+import type { QuizQuestion } from "../types";
 
-type LoadStatus = 'loading' | 'success' | 'error';
+type LoadStatus = "loading" | "success" | "error";
 
 interface UseQuizQuestionsResult {
   status: LoadStatus;
@@ -23,34 +23,37 @@ const REQUEST_TIMEOUT_MS = 10_000;
  * and timeout paths) without touching real timers everywhere.
  */
 export function useQuizQuestions(
-  fetcher: () => Promise<QuizQuestion[]>
+  fetcher: () => Promise<QuizQuestion[]>,
 ): UseQuizQuestionsResult {
-  const [status, setStatus] = useState<LoadStatus>('loading');
+  const [status, setStatus] = useState<LoadStatus>("loading");
   const [data, setData] = useState<QuizQuestion[] | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   const retry = useCallback(() => {
-    setStatus('loading');
+    setStatus("loading");
     setData(null);
-    setAttempt(a => a + 1);
+    setAttempt((a) => a + 1);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     const timeout = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Request timed out')), REQUEST_TIMEOUT_MS);
+      setTimeout(
+        () => reject(new Error("Request timed out")),
+        REQUEST_TIMEOUT_MS,
+      );
     });
 
     Promise.race([fetcher(), timeout])
-      .then(questions => {
+      .then((questions) => {
         if (cancelled) return;
         setData(questions);
-        setStatus('success');
+        setStatus("success");
       })
       .catch(() => {
         if (cancelled) return;
-        setStatus('error');
+        setStatus("error");
       });
 
     return () => {
