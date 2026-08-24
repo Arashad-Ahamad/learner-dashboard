@@ -1,4 +1,4 @@
-export type BadgeStatus = 'default' | 'in-progress' | 'completed' | 'disabled';
+export type BadgeStatus = "default" | "in-progress" | "completed" | "disabled";
 
 export interface LearnerProgressBadgeProps {
   status?: BadgeStatus;
