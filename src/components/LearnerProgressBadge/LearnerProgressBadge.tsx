@@ -86,9 +86,12 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
       />
 
       {/* Content */}
-      <div className="flex-1 min-w-0" aria-hidden="true">
+      <div className="flex-1 min-w-0">
+        {/* Title is already folded into the outer aria-label, so it stays
+            hidden from AT to avoid a duplicate announcement. */}
         <div
           className="font-semibold truncate"
+          aria-hidden="true"
           style={{
             fontSize: typography.heading.fontSize,
             lineHeight: typography.heading.lineHeight,
@@ -99,15 +102,26 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
           {title}
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar — deliberately NOT aria-hidden. It needs its own
+            accessible name because it's a live, updatable value distinct
+            from the outer aria-label snapshot (e.g. if progress changes
+            without the badge itself re-announcing). Previously this sat
+            inside an aria-hidden ancestor, which removed the whole
+            subtree — including this role — from the accessibility tree,
+            so screen readers never saw it despite the markup being
+            "correct" in isolation. */}
         <div
           className="mt-2 flex items-center gap-2"
           role="progressbar"
+          aria-label={`${title} progress`}
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
         >
-          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden"
+            aria-hidden="true"
+          >
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
@@ -116,7 +130,11 @@ const LearnerProgressBadge: React.FC<LearnerProgressBadgeProps> = ({
               }}
             />
           </div>
-          <span className="text-xs font-medium" style={{ color: style.text }}>
+          <span
+            className="text-xs font-medium"
+            aria-hidden="true"
+            style={{ color: style.text }}
+          >
             {Math.round(progress)}%
           </span>
         </div>
