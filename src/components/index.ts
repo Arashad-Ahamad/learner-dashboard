@@ -2,3 +2,4 @@ export { default as LearnerProgressBadge } from "./LearnerProgressBadge/LearnerP
 export { default as Quiz } from "./Quiz/Quiz";
 export { default as QuizSkeleton } from "./Skeleton/QuizSkeleton";
 export { default as QuizLoadError } from "./Quiz/QuizLoadError";
+export { default as QuizHistory } from './QuizHistory/QuizHistory';
