@@ -23,3 +23,12 @@ export interface QuizProps {
   questions: QuizQuestion[];
   onComplete?: (result: QuizResult) => void;
 }
+
+//  Ticket #2 - Quiz History
+export interface QuizAttempt {
+  id: string;
+  date: string;
+  score: number;
+  total: number;
+  percentage: number;
+}

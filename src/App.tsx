@@ -4,14 +4,13 @@ import {
   Quiz,
   QuizSkeleton,
   QuizLoadError,
+  QuizHistory,
 } from "./components";
 import { quizQuestions } from "./data/quizData";
 import { useQuizQuestions } from "./hooks/useQuizQuestions";
-import type { QuizQuestion, QuizResult } from "./types";
+import type { QuizQuestion, QuizResult, QuizAttempt } from "./types";
 
-// Stand-in for a real API call. Resolves the statically-bundled question set
-// after a short simulated delay so the loading skeleton has something to do.
-// Swap this for a real `fetch(...)` when a questions endpoint exists.
+// Stand-in for a real API call
 function fetchQuizQuestions(): Promise<QuizQuestion[]> {
   return new Promise((resolve) => {
     setTimeout(() => resolve(quizQuestions), 400);
@@ -20,27 +19,35 @@ function fetchQuizQuestions(): Promise<QuizQuestion[]> {
 
 function App() {
   const { status, data, retry } = useQuizQuestions(fetchQuizQuestions);
-  const [quizKey, setQuizKey] = useState(0); // For resetting quiz
+  const [quizKey, setQuizKey] = useState(0);
+  const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
 
   const handleQuizComplete = useCallback((results: QuizResult) => {
-    // Only aggregate counts are logged, and only in dev builds — no learner
-    // identifiers, answer content, or telemetry payloads reach the console
-    // in production.
     if (import.meta.env.DEV) {
       console.log("Quiz Results:", results);
     }
 
-    // Optional: Show a success message or trigger analytics
-    // You could also trigger a confetti effect or celebration here
+    // Quiz complete hone par history mein add
+    const newAttempt: QuizAttempt = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      }),
+      score: results.correct,
+      total: results.total,
+      percentage: Math.round((results.correct / results.total) * 100),
+    };
+
+    setAttempts((prev) => [newAttempt, ...prev]);
   }, []);
 
-  // Handle retry with a key reset to force re-render of quiz
   const handleRetry = useCallback(() => {
     retry();
-    setQuizKey((prev) => prev + 1); // Force re-render of quiz
+    setQuizKey((prev) => prev + 1);
   }, [retry]);
 
-  // Accessibility: Announce status changes to screen readers
   useEffect(() => {
     const statusMap = {
       loading: "Loading quiz questions...",
@@ -49,7 +56,6 @@ function App() {
     };
 
     if (status !== "loading") {
-      // Announce status change to screen readers
       const announcement = document.createElement("div");
       announcement.setAttribute("aria-live", "polite");
       announcement.setAttribute("aria-atomic", "true");
@@ -57,7 +63,6 @@ function App() {
       announcement.textContent = statusMap[status] || "";
       document.body.appendChild(announcement);
 
-      // Clean up after announcement
       setTimeout(() => {
         document.body.removeChild(announcement);
       }, 3000);
@@ -67,7 +72,6 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <header className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">
             Learner Dashboard
@@ -77,14 +81,10 @@ function App() {
           </p>
         </header>
 
-        {/* Main Grid */}
         <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-          {/* Left Column: Progress Badges */}
+          {/* Left Column: Progress Badges + History */}
           <section aria-labelledby="progress-heading">
-            <h2
-              id="progress-heading"
-              className="text-lg sm:text-xl font-semibold text-gray-700 mb-4"
-            >
+            <h2 id="progress-heading" className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">
               Your Progress
             </h2>
             <div className="space-y-4" role="list">
@@ -120,18 +120,19 @@ function App() {
                 />
               </div>
             </div>
+
+            {/*  QUIZ HISTORY */}
+            <div className="mt-6">
+              <QuizHistory attempts={attempts} />
+            </div>
           </section>
 
           {/* Right Column: Quiz */}
           <section aria-labelledby="quiz-heading">
-            <h2
-              id="quiz-heading"
-              className="text-lg sm:text-xl font-semibold text-gray-700 mb-4"
-            >
+            <h2 id="quiz-heading" className="text-lg sm:text-xl font-semibold text-gray-700 mb-4">
               Quick Quiz
             </h2>
 
-            {/* Error Boundary Fallback */}
             {status === "error" && (
               <QuizLoadError
                 onRetry={handleRetry}
@@ -139,13 +140,11 @@ function App() {
               />
             )}
 
-            {/* Loading State */}
             {status === "loading" && <QuizSkeleton />}
 
-            {/* Success State */}
             {status === "success" && data && (
               <Quiz
-                key={quizKey} // Force re-render on retry
+                key={quizKey}
                 questions={data}
                 onComplete={handleQuizComplete}
               />
@@ -153,7 +152,6 @@ function App() {
           </section>
         </div>
 
-        {/* Footer */}
         <footer className="mt-8 text-center text-sm text-gray-500 border-t border-gray-200 pt-4">
           <p>&copy; 2026 Learner Dashboard. All rights reserved.</p>
         </footer>
